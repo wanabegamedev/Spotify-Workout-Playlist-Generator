@@ -1,0 +1,52 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Workout Playlist Generator</title>
+</head>
+
+<body>
+
+    
+<p>Spotify Workout Playlist Generator</p>
+
+<button onclick="GetLamaResponse()"> Click Me </button>
+
+<p id="AIGen"></p>
+
+
+
+</body>
+<script>
+
+function GetLamaResponse()
+{
+    fetch('https://ai.hackclub.com/chat/completions', {
+
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+
+        },
+
+        body: JSON.stringify({
+            messages: [{
+                role: 'user',
+                content: "Tell me a joke!"
+            }]
+        })
+
+            
+
+    
+          
+        
+
+
+    }).then(response => response.text()).then(data => console.log(data)).catch(error => console.error("Error:", error))
+}
+
+</script>
+
+</html>
+
