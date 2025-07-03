@@ -10,7 +10,7 @@
     
 <p>Spotify Workout Playlist Generator</p>
 
-<button onclick="GetLamaResponse()"> Click Me </button>
+<button onclick=" GetLamaResponse()"> Click Me </button>
 
 <p id="AIGen"></p>
 
@@ -19,9 +19,19 @@
 </body>
 <script>
 
-function GetLamaResponse()
+
+songs = ""
+
+numberOfSongs = 20;
+
+BPM = 128;
+
+otherInfo = "songs from 1989 in the britpop genre"
+
+async function GetLamaResponse()
 {
-    fetch('https://ai.hackclub.com/chat/completions', {
+    output = "";
+  aiResponse = await fetch('https://ai.hackclub.com/chat/completions', {
 
         method: 'POST',
         headers: {
@@ -32,18 +42,36 @@ function GetLamaResponse()
         body: JSON.stringify({
             messages: [{
                 role: 'user',
-                content: "Tell me a joke!"
+                content: "Give me a list of " + numberOfSongs + "songs that are " + BPM + " beats per minute" + "considering " + otherInfo + ". Format the data in this style: remaster%20track:SONG_TITLE%20artist:ARTIST FIRST NAME OR BAND NAME%ARTIST LAST NAME (IGNORE IF YOU HAVE ALREADY PUT THE BAND NAME)    Instructions: Do not provide any other information about the tracks or explain why you picked them and add a comma after each entry"
             }]
         })
 
             
-
-    
           
         
 
 
-    }).then(response => response.text()).then(data => console.log(data)).catch(error => console.error("Error:", error))
+    })
+
+     output = await aiResponse.json()
+
+
+     //console.log(output.choices[0].message.content);
+     document.getElementById('AIGen').innerHTML = output.choices[0].message.content
+
+     songs = output.choices[0].message.content;
+     
+
+}
+
+
+function GeneratePlaylist()
+{
+    GetLamaResponse()
+
+    
+
+
 }
 
 </script>
