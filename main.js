@@ -2,6 +2,12 @@ const clientId = "61ff8c77aec44368a4bff2552e89ba56";
 const params = new URLSearchParams(window.location.search) 
 const code = params.get("code");
 
+var localAccessToken;
+var spotifySongs = [];
+var profileID;
+var playlistID;
+
+
 const generateButton = document.getElementById("GenerateButton");
 
 const redirectURL = 'https://prime-likely-cockatoo.ngrok-free.app/Spotify-Workout-Playlist-Generator/'; 
@@ -10,8 +16,14 @@ if (!code) {
     redirectToAuthCodeFlow(clientId);
 } else {
     const accessToken = await getAccessToken(clientId, code);
+    localAccessToken = accessToken;
     const profile = await fetchProfile(accessToken);
+    profileID = profile.id;
+    console.log(profileID)
     console.log(profile);
+    
+
+generateButton.addEventListener("click", GeneratePlaylist)
 
 }
 
@@ -30,7 +42,7 @@ export async function redirectToAuthCodeFlow(clientId) {
     params.append("client_id", clientId);
     params.append("response_type", "code");
     params.append("redirect_uri", redirectURL);
-    params.append("scope", "user-read-private user-read-email playlist-modify-private");
+    params.append("scope", "user-read-private user-read-email playlist-modify-private playlist-modify-public");
     params.append("code_challenge_method", "S256");
     params.append("code_challenge", challenge);
 
@@ -98,16 +110,8 @@ async function fetchProfile(token) {
 }
 
 
-
-
-generateButton.addEventListener("click", GetLamaResponse)
-
-
-
-
 async function GetLamaResponse()
 {
-        var spotifySongs = []
 
     var numberOfSongs = 20;
 
@@ -127,7 +131,7 @@ async function GetLamaResponse()
         body: JSON.stringify({
             messages: [{
                 role: 'user',
-                content: "Give me a list of " + 4 + "songs that are " + BPM + " beats per minute" + "considering " + otherInfo + ". Format the data in this style: remaster%20track:SONG_TITLE%20artist:ARTIST FIRST NAME OR BAND NAME%ARTIST LAST NAME (IGNORE IF YOU HAVE ALREADY PUT THE BAND NAME)    Instructions: add a comma between each track and do not provide any other information about the tracks or explain why you picked them"
+                content: "Give me a list of " + 4 + "songs that are " + BPM + " beats per minute" + "considering " + otherInfo + ". Format the data in this style: remaster%20track:SONG_TITLE%20artist:ARTIST FIRST NAME OR BAND NAME%ARTIST LAST NAME (IGNORE IF YOU HAVE ALREADY PUT THE BAND NAME)    Instructions: add a comma between each track but no space. do not provide any other information about the tracks or explain why you picked them. If you make a mistake don't tell me about it"
             }]
         })
         
@@ -150,42 +154,104 @@ async function GetLamaResponse()
 }
 
 
-export async function GeneratePlaylist()
+ async function GeneratePlaylist()
 {
-    songs = "";
+    var songs = "";
+    playlistID = 0
+    spotifySongs = []
+
    songs = await GetLamaResponse()
-
-   console.log(songs.choices[0].message.content);
-
 
    songs = songs.choices[0].message.content.split(",")
 
-   ReturnTracks(song)
+   
+   ReturnTracks(songs)
+
+   console.log(spotifySongs);
+
+   CreatePlaylist("TEST")
+
+
+
+
+
 
 
 }
 
 
  async function ReturnTracks(songs) {
-            
-            songs.forEach(songs => {
-                sng =  ReturnSongData(songs, accessToken).items[0].name
-                console.log(sng)
-            
-                
-            });
+   
+    for (const song of songs) {
+        if (!song) continue; // Skip empty strings from split
+        
+        const params = new URLSearchParams();
+        params.append('q', song);
+        params.append('type', 'track');
+        params.append('limit', '1'); // Get the top result
+
+        const result = await fetch(`https://api.spotify.com/v1/search?${params.toString()}`, {
+            method: "GET", 
+            headers: { Authorization: `Bearer ${localAccessToken}` }
+        });
+
+        const sng =  await result.json();
+
+        if (sng.tracks && sng.tracks.items.length > 0) {
+
+            spotifySongs.push(sng.tracks.items[0].uri)
+
+        } else {
+            console.log(`No results found for "${song}"`);
         }
+    }
+ }
+
+ async function CreatePlaylist(playlistName)
+ {
+    const result = await fetch(`https://api.spotify.com/v1/users/9lj4thksgg369vs62aq1slefq/playlists`, {
+            method: "POST", 
+            headers: {  'Content-Type': 'application/json',
+                
+                Authorization: `Bearer ${localAccessToken}` },
+
+            body: JSON.stringify({
+                'name': playlistName,
+                'description': "AI Generated Playlist",
+                "public": 'false'
+
+            
+         })
 
 
-async function  ReturnSongData(token, song)
-{
-    const result = await fetch('https://api.spotify.com/v1/search?' + song, {
+        });
+       
+    playlistID = result.id;
+ }
 
-       method: "GET", headers: { Authorization: `Bearer ${token}` }
+ async function AddSongsToPlaylist()
+ {
+    const result = await fetch(`https://api.spotify.com/v1/playlists/` + playlistID, {
+            method: "POST", 
+            headers: {  'Content-Type': 'application/json',
+                
+                Authorization: `Bearer ${localAccessToken}` },
 
-    });
+            body: JSON.stringify({
+                'name': []
+                
 
-    return await result.json();
-}
+            
+         })
+
+
+        });
+ }
+
+ function ArrayTOCSV()
+ {
+
+ }
+
 
 
