@@ -1,26 +1,18 @@
-///spotifySongs = []
-
-//numberOfSongs = 20;
-
-//BPM = 128;
-
-//otherInfo = "songs in the britpop genre"
-
-
-
-
 const clientId = "61ff8c77aec44368a4bff2552e89ba56"; 
 const params = new URLSearchParams(window.location.search) 
 const code = params.get("code");
 
-const redirectURL = 'https://dbe0-86-4-195-110.ngrok-free.app/Spotify-Workout-Playlist-Generator/index.html'; 
+const generateButton = document.getElementById("GenerateButton");
+
+const redirectURL = 'https://prime-likely-cockatoo.ngrok-free.app/Spotify-Workout-Playlist-Generator/'; 
 
 if (!code) {
     redirectToAuthCodeFlow(clientId);
 } else {
     const accessToken = await getAccessToken(clientId, code);
     const profile = await fetchProfile(accessToken);
-    populateUI(profile);
+    console.log(profile);
+
 }
 
 
@@ -84,9 +76,8 @@ async function getAccessToken(clientId, code) {
 
   const result = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
-    headers: {"Content-Type": "application/x-www-form-urlencoded"},
-    body: params
-
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params
   });
 
   const {access_token} = await result.json();
@@ -95,22 +86,37 @@ async function getAccessToken(clientId, code) {
 }
 
 async function fetchProfile(token) {
-    // TODO: Call Web API
+
+
+    const result = await fetch("https://api.spotify.com/v1/me", {
+
+       method: "GET", headers: { Authorization: `Bearer ${token}` }
+
+    });
+
+    return await result.json();
 }
 
-function populateUI(profile) {
-    // TODO: Update UI with profile data
-}
 
 
+
+generateButton.addEventListener("click", GetLamaResponse)
 
 
 
 
 async function GetLamaResponse()
 {
-    output = "";
-  aiResponse = await fetch('https://ai.hackclub.com/chat/completions', {
+        var spotifySongs = []
+
+    var numberOfSongs = 20;
+
+    var BPM = 128;
+
+    var otherInfo = "songs in the britpop genre"
+
+ 
+  const aiResponse = await fetch('https://ai.hackclub.com/chat/completions', {
 
         method: 'POST',
         headers: {
@@ -129,14 +135,14 @@ async function GetLamaResponse()
 
     })
 
-     output = await aiResponse.json()
+        const aiOutput  = await aiResponse.json()
 
  
 
      //console.log(output.choices[0].message.content);
-     document.getElementById('AIGen').innerHTML = output.choices[0].message.content
+     document.getElementById('AIGen').innerHTML = aiOutput.choices[0].message.content
 
-     return(output)
+     return(aiOutput)
 
      
 
@@ -144,7 +150,7 @@ async function GetLamaResponse()
 }
 
 
-async function GeneratePlaylist()
+export async function GeneratePlaylist()
 {
     songs = "";
    songs = await GetLamaResponse()
@@ -154,16 +160,32 @@ async function GeneratePlaylist()
 
    songs = songs.choices[0].message.content.split(",")
 
+   ReturnTracks(song)
 
-    console.log(APIController.GetToken())
+
 }
 
 
- const ReturnTracks = async(songs, token) => {
+ async function ReturnTracks(songs) {
             
-            songs.forEach(song => {
-                sng =  FetchSpotifyWebAPI('v1/search?q=' + song, 'GET')
+            songs.forEach(songs => {
+                sng =  ReturnSongData(songs, accessToken).items[0].name
+                console.log(sng)
+            
                 
-                console.log(sng);
             });
         }
+
+
+async function  ReturnSongData(token, song)
+{
+    const result = await fetch('https://api.spotify.com/v1/search?' + song, {
+
+       method: "GET", headers: { Authorization: `Bearer ${token}` }
+
+    });
+
+    return await result.json();
+}
+
+
