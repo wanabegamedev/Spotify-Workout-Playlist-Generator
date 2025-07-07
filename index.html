@@ -1,26 +1,54 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spotify Workout Playlist Generator</title>
-    <script type="module" src="main.js"></script>
-     
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
 </head>
-
-
 <body>
+    <section class="section">
+        <divc lass="container">
+            <div class="has-text-centered mb-6">
+                <p class="title is-1 has-text-primary has-text-weight-extrabold">Spotify AI Playlist Generator</p>
+            </div>
+
+            <!-- This view shows when the user is not logged in -->
+            <div id="login-view">
+                <button id="SpotifyConnect" class="button is-primary is-large is-fullwidth">Connect Spotify</button>
+            </div>
+
+            <!-- This view is hidden until the user logs in -->
+            <div id="app-view" style="display: none;">
+                <div class="box block mt-6">
+                    <p class="mb-4 has-text-centered has-text-weight-bold is-size-4">Enter Number of Songs</p>
+                    <input id="SongCount" class="input is-primary is-medium" type="number" value="20">
+                </div>
+                
+                <div class="box block mt-6">
+                    <p class="mb-4 has-text-centered has-text-weight-bold is-size-4">Enter Beats Per Minute</p>
+                    <input id="BPM" class="input is-primary is-medium" type="number" value="128">
+                </div>
+                
+                <div class="box block mt-6">
+                    <p class="mb-4 has-text-centered has-text-weight-bold is-size-4">Describe the playlist vibe</p>
+                    <input id="Info" class="input is-primary is-medium" placeholder="e.g., 90s Upbeat Britpop">
+                </div>
+
+                <button class="mt-6 button is-primary is-medium is-fullwidth" id="GenerateButton">Generate Playlist</button>
+
+                <div id="Result" class="has-text-weight-extrabold is-underlined is-size-1 mt-6"></div>>
+
+                    
+                </div>
+
+
+            </div>
+        </div>
+    </section>
     
-<p>Spotify Workout Playlist Generator</p>
-
-<button id="GenerateButton"> Click Me </button>
-
-<p id="AIGen"></p>
-
-
-
+    <!-- This line is crucial - it loads your JavaScript -->
+    <script src="main.js" type="module"></script>
 </body>
-
-
 </html>
 

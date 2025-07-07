@@ -1,35 +1,65 @@
-const clientId = "61ff8c77aec44368a4bff2552e89ba56"; 
-const params = new URLSearchParams(window.location.search) 
+const clientId = "61ff8c77aec44368a4bff2552e89ba56";
+const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
 
+// --- DOM Elements ---
+const loginView = document.getElementById('login-view');
+const appView = document.getElementById('app-view');
+const spotifyConnectButton = document.getElementById('SpotifyConnect');
+const generateButton = document.getElementById("GenerateButton");
+
+// --- Global State ---
 var localAccessToken;
 var spotifySongs = [];
 var profileID;
 var playlistID;
+var numberOfSongs = 20;
 
+var BPM = 128;
 
-const generateButton = document.getElementById("GenerateButton");
+ var otherInfo = "songs in the britpop genre"
 
-const redirectURL = 'https://prime-likely-cockatoo.ngrok-free.app/Spotify-Workout-Playlist-Generator/'; 
+// --- App Initialization ---
+
+// Use a redirect URL that points to the root of your ngrok-served folder.
+const redirectURL = document.URL;
+
 
 if (!code) {
-    redirectToAuthCodeFlow(clientId);
+    // 1. If there is no authorization code, show the login view.
+    loginView.style.display = 'block';
+    appView.style.display = 'none';
+    spotifyConnectButton.addEventListener('click', () => redirectToAuthCodeFlow());
 } else {
-    const accessToken = await getAccessToken(clientId, code);
-    localAccessToken = accessToken;
-    const profile = await fetchProfile(accessToken);
-    profileID = profile.id;
-    console.log(profileID)
-    console.log(profile);
-    
-
-generateButton.addEventListener("click", GeneratePlaylist)
-
+    handleAuthentication();
 }
 
+async function handleAuthentication() {
+    try {
+        const accessToken = await getAccessToken(clientId, code);
+        localAccessToken = accessToken;
+        const profile = await fetchProfile(accessToken);
+        profileID = profile.id;
+        console.log("Authentication successful for:", profile.display_name);
 
+        // Show the main app and hide the login button
+        loginView.style.display = 'none';
+        appView.style.display = 'block';
 
-export async function redirectToAuthCodeFlow(clientId) {
+        // Now that the user is logged in, attach the event listener to the generate button.
+        generateButton.addEventListener("click", GeneratePlaylist);
+
+    } catch (error) {
+        console.error("Error during authentication:", error);
+        // If auth fails, show login view again so the user can retry.
+        loginView.style.display = 'block';
+        appView.style.display = 'none';
+    }
+}
+
+// --- Spotify API Functions ---
+
+async function redirectToAuthCodeFlow() {
     // TODO: Redirect to Spotify authorization page
 
     const verifier = GenerateCodeVerifier(128);
@@ -113,11 +143,7 @@ async function fetchProfile(token) {
 async function GetLamaResponse()
 {
 
-    var numberOfSongs = 20;
-
-    var BPM = 128;
-
-    var otherInfo = "songs in the britpop genre"
+    
 
  
   const aiResponse = await fetch('https://ai.hackclub.com/chat/completions', {
@@ -131,7 +157,7 @@ async function GetLamaResponse()
         body: JSON.stringify({
             messages: [{
                 role: 'user',
-                content: "Give me a list of " + 4 + "songs that are " + BPM + " beats per minute" + "considering " + otherInfo + ". Format the data in this style: remaster%20track:SONG_TITLE%20artist:ARTIST FIRST NAME OR BAND NAME%ARTIST LAST NAME (IGNORE IF YOU HAVE ALREADY PUT THE BAND NAME)    Instructions: add a comma between each track but no space. do not provide any other information about the tracks or explain why you picked them. If you make a mistake don't tell me about it"
+                content: "Give me a list of " + numberOfSongs + "songs that are " + BPM + " beats per minute" + "considering " + otherInfo + ". Format the data in this style: remaster%20track:SONG_TITLE%20artist:ARTIST FIRST NAME OR BAND NAME%ARTIST LAST NAME (IGNORE IF YOU HAVE ALREADY PUT THE BAND NAME)    Instructions: add a comma between each track but no space. do not provide any other information about the tracks or explain why you picked them. If you make a mistake don't tell me about it"
             }]
         })
         
@@ -144,7 +170,7 @@ async function GetLamaResponse()
  
 
      //console.log(output.choices[0].message.content);
-     document.getElementById('AIGen').innerHTML = aiOutput.choices[0].message.content
+     //document.getElementById('AIGen').innerHTML = aiOutput.choices[0].message.content
 
      return(aiOutput)
 
@@ -156,25 +182,41 @@ async function GetLamaResponse()
 
  async function GeneratePlaylist()
 {
+
+    generateButton.classList.add("is-loading")
+
     var songs = "";
     playlistID = 0
     spotifySongs = []
+
+    numberOfSongs = document.getElementById("SongCount").value;
+      BPM = document.getElementById("BPM").value;
+      otherInfo = document.getElementById("Info").value;
 
    songs = await GetLamaResponse()
 
    songs = songs.choices[0].message.content.split(",")
 
    
-   ReturnTracks(songs)
+  await ReturnTracks(songs)
 
    console.log(spotifySongs);
 
-   CreatePlaylist("TEST")
+  await CreatePlaylist("AI Playlist")
+ 
+   console.log(playlistID)
 
+   await AddSongsToPlaylist(spotifySongs)
 
+   const para = document.createElement("p");
+    const node = document.createTextNode("PLAYLIST CREATED GO TO YOUR SPOTIFY!");
 
+    para.appendChild(node);
 
+    const element = document.getElementById("Result");
+    element.append(para)
 
+      generateButton.classList.remove("is-loading")
 
 
 }
@@ -209,7 +251,7 @@ async function GetLamaResponse()
 
  async function CreatePlaylist(playlistName)
  {
-    const result = await fetch(`https://api.spotify.com/v1/users/9lj4thksgg369vs62aq1slefq/playlists`, {
+    const result = await fetch(`https://api.spotify.com/v1/users/${profileID}/playlists`, {
             method: "POST", 
             headers: {  'Content-Type': 'application/json',
                 
@@ -218,40 +260,35 @@ async function GetLamaResponse()
             body: JSON.stringify({
                 'name': playlistName,
                 'description': "AI Generated Playlist",
-                "public": 'false'
+                "public": false
 
             
          })
 
 
         });
+
+      
        
-    playlistID = result.id;
+    const data = await result.json();
+    playlistID = data.id;
  }
 
- async function AddSongsToPlaylist()
+ async function AddSongsToPlaylist(tracks)
  {
-    const result = await fetch(`https://api.spotify.com/v1/playlists/` + playlistID, {
+    const result = await fetch(`https://api.spotify.com/v1/playlists/${playlistID}/tracks`, {
             method: "POST", 
             headers: {  'Content-Type': 'application/json',
-                
-                Authorization: `Bearer ${localAccessToken}` },
-
-            body: JSON.stringify({
-                'name': []
-                
-
-            
-         })
-
-
+                Authorization: `Bearer ${localAccessToken}` 
+            },
+            body: JSON.stringify({ 
+                uris: tracks 
+            })
         });
+
+    return await result.json();
  }
 
- function ArrayTOCSV()
- {
-
- }
 
 
 
