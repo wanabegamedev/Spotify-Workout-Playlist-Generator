@@ -22,7 +22,7 @@ var BPM = 128;
 // --- App Initialization ---
 
 // Use a redirect URL that points to the root of your ngrok-served folder.
-const redirectURL = document.URL;
+const redirectURL = document.uri;
 
 
 if (!code) {
