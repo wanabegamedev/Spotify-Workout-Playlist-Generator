@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify Workout Playlist Generator</title>
+    <title>Spotify AI Playlist Generator</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
 </head>
 <body>
     <section class="section">
         <divc lass="container">
             <div class="has-text-centered mb-6">
-                <p class="title is-1 has-text-primary has-text-weight-extrabold">Spotify AI Playlist Generator</p>
+                <p class="title is-1 has-text-primary has-text-weight-extrabold has-text-centered">Spotify AI Playlist Generator</p>
             </div>
+
+              <p class="title is-5 has-text-primary has-text-weight-bold">Describe your dream playlist and get it generated for you. (While it works 70%  of the time sometimes the playlist generated can be a bit odd!)</p>
 
             <!-- This view shows when the user is not logged in -->
             <div id="login-view">
@@ -31,17 +33,22 @@
                 </div>
                 
                 <div class="box block mt-6">
-                    <p class="mb-4 has-text-centered has-text-weight-bold is-size-4">Describe the playlist vibe</p>
+                    <p class="mb-4 has-text-centered has-text-weight-bold is-size-4">Describe the playlist vibe/genre</p>
                     <input id="Info" class="input is-primary is-medium" placeholder="e.g., 90s Upbeat Britpop">
+                </div>
+
+                  <div class="box block mt-6">
+                    <p class="mb-4 has-text-centered has-text-weight-bold is-size-4">Enter the playlist's name</p>
+                    <input id="PlaylistName" class="input is-primary is-medium">
                 </div>
 
                 <button class="mt-6 button is-primary is-medium is-fullwidth" id="GenerateButton">Generate Playlist</button>
 
-                <div id="Result" class="has-text-weight-extrabold is-underlined is-size-1 mt-6"></div>>
+                
 
                     
                 </div>
-
+                <div id="Result" class="has-text-weight-extrabold is-underlined is-size-1 mt-6 is-success" ></div>
 
             </div>
         </div>

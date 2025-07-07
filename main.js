@@ -17,12 +17,16 @@ var numberOfSongs = 20;
 
 var BPM = 128;
 
- var otherInfo = "songs in the britpop genre"
+var otherInfo = "songs in the britpop genre"
+
+var playlistName = "AI Playlist"
+
+var playlistLink = "";
 
 // --- App Initialization ---
 
 // Use a redirect URL that points to the root of your ngrok-served folder.
-const redirectURL = document.uri;
+const redirectURL = window.location.href.split('?')[0];
 
 
 if (!code) {
@@ -192,6 +196,7 @@ async function GetLamaResponse()
     numberOfSongs = document.getElementById("SongCount").value;
       BPM = document.getElementById("BPM").value;
       otherInfo = document.getElementById("Info").value;
+      playlistName = document.getElementById("PlaylistName").value;
 
    songs = await GetLamaResponse()
 
@@ -202,13 +207,14 @@ async function GetLamaResponse()
 
    console.log(spotifySongs);
 
-  await CreatePlaylist("AI Playlist")
+  await CreatePlaylist(playlistName)
  
    console.log(playlistID)
 
    await AddSongsToPlaylist(spotifySongs)
 
    const para = document.createElement("p");
+  // para.setAttribute("href", )
     const node = document.createTextNode("PLAYLIST CREATED GO TO YOUR SPOTIFY!");
 
     para.appendChild(node);
