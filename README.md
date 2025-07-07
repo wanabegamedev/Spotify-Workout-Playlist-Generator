@@ -2,7 +2,7 @@
 
 # Spotify AI Playlist Generator
 
-https://hackatime-badge.hackclub.com/U07AJ643JRE/Spotify-Workout-Playlist-Generator
+[![Time Spent]([badge](https://hackatime-badge.hackclub.com/U07AJ643JRE/Spotify-Workout-Playlist-Generator)]()
 
 Try it out [Here]([https://pages.github.com/](https://wanabegamedev.github.io/Spotify-Workout-Playlist-Generator/))!
 
