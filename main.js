@@ -215,7 +215,7 @@ async function GetLamaResponse()
 
    const para = document.createElement("p");
   // para.setAttribute("href", )
-    const node = document.createTextNode("PLAYLIST CREATED GO TO YOUR SPOTIFY!");
+    const node = document.createTextNode("PLAYLIST CREATED GO TO YOUR SPOTIFY TO SEE THE PLAYLIST!");
 
     para.appendChild(node);
 
@@ -223,6 +223,8 @@ async function GetLamaResponse()
     element.append(para)
 
       generateButton.classList.remove("is-loading")
+
+  
 
 
 }
