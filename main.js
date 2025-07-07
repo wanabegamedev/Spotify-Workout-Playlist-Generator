@@ -193,10 +193,30 @@ async function GetLamaResponse()
     playlistID = 0
     spotifySongs = []
 
+
     numberOfSongs = document.getElementById("SongCount").value;
+
       BPM = document.getElementById("BPM").value;
       otherInfo = document.getElementById("Info").value;
       playlistName = document.getElementById("PlaylistName").value;
+
+      //Validation Code
+    if(numberOfSongs <= 0)
+    {
+        numberOfSongs = 1
+    }
+    if (BPM <= 0)
+    {
+        BPM = 128;
+    }
+    if (otherInfo == "" || otherInfo == null)
+    {
+        otherInfo = "A 90s Britpop playlist!"
+    }
+    if (playlistName == "" || playlistName == null)
+    {
+        playlistName = "A 90s Britpop playlist!"
+    }
 
    songs = await GetLamaResponse()
 
