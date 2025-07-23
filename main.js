@@ -31,7 +31,7 @@ let redirectURL = window.location.origin + window.location.pathname;
 if (redirectURL.endsWith('index.html')) {
   redirectURL = redirectURL.slice(0, -'index.html'.length);
 }
-
+console.log("Using Redirect URL:", redirectURL); // For debugging
 
 
 if (!code) {
