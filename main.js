@@ -25,8 +25,13 @@ var playlistLink = "";
 
 // --- App Initialization ---
 
-// Use a redirect URL that points to the root of your ngrok-served folder.
-const redirectURL = window.location.href.split('?')[0];
+// Create a canonical redirect URL.
+// This ensures it works on both local and deployed environments.
+let redirectURL = window.location.origin + window.location.pathname;
+if (redirectURL.endsWith('index.html')) {
+  redirectURL = redirectURL.slice(0, -'index.html'.length);
+}
+
 
 
 if (!code) {
