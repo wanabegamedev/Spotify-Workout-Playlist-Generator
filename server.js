@@ -2,7 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");   
 const cors = require("cors");      
 const fetch = require("node-fetch")
-const {GoogleGenerativeAI} = require("@google/genai")
+const {GoogleGenerativeAI} = require("@google/generative-ai")
 
 
 
@@ -15,12 +15,17 @@ const app = express();
 const port = 3000
 
 
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+
 app.use(cors())
+
+app.use(express.json())
 
 //Get access key and return it
 app.get('/api/token', async (req, res) => {
     const spotifyClientId = process.env.SPOTIFY_CLIENT_ID;
     const spotifyClientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+    const spotifyRefreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
 
     // This is the request we will send to Spotify
     const response = await fetch('https://accounts.spotify.com/api/token', {
@@ -30,10 +35,18 @@ app.get('/api/token', async (req, res) => {
             // We need to base64 encode our client ID and secret
             'Authorization': 'Basic ' + (Buffer.from(spotifyClientId + ':' + spotifyClientSecret).toString('base64'))
         },
-        body: 'grant_type=client_credentials'
+       body: new URLSearchParams({
+            grant_type: 'refresh_token',
+            refresh_token: spotifyRefreshToken
+        })
     });
 
     const data = await response.json();
+
+    if (data.error) {
+        console.error("Error refreshing token:", data.error);
+        return res.status(500).json(data);
+    }
 
     // Send the access token and our user ID back to the frontend
     res.json({

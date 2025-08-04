@@ -22,17 +22,32 @@ var playlistLink = "";
 
 
 
-
 generateButton.addEventListener("click", GeneratePlaylist);
 
 
 async function GetSpotifyCreds()
 { 
-    const response = await fetch("http://localhost:" + port + "/api/token");
-   const data = await response.json();
+    try {
+        const response = await fetch("http://localhost:" + port + "/api/token");
+        // Check if the server responded with an error code (e.g., 404, 500)
+        if (!response.ok) {
+            console.error("Failed to get Spotify credentials. Server responded with:", response.status);
+            localAccessToken = null;
+            profileID = null;
+            return;
+        }
+        const data = await response.json();
+        localAccessToken = data.access_token;
+        profileID = data.user_id;
+        console.log("Profile ID: " + profileID);
+    } catch (error) {
+        // This catches network errors (e.g., server is not running)
+        console.error("Cannot connect to server. Is it running?", error);
+        localAccessToken = null;
+        profileID = null;
+    }
 
-    localAccessToken = data.access_token;
-    profileID = data.user_id;
+    console.log("Profile ID: " + profileID)
 }
 
 
@@ -73,12 +88,27 @@ async function GetSpotifyCreds()
         playlistName = "A 90s Britpop playlist!"
     }
 
-   songs = await GetGeminiResponse()
+    var jsonSongs;
 
-   songs = songs.choices[0].message.content.split(",")
+   jsonSongs = await GetGeminiResponse()
+
+   try {
+    
+       jsonSongs = jsonSongs.text.replace(/```json/g, '').replace(/```/g, '').trim()
+
+   songs = JSON.parse(jsonSongs)
+
+
+   } catch (error) {
+        console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")    
+   }
+
+   //songs = songs.choices[0].message.content.split(",")
 
    
-  await ReturnTracks(songs)
+ await ReturnTracks(songs)
+
+    spotifySongs
 
    console.log(spotifySongs);
 
@@ -108,7 +138,24 @@ async function GetSpotifyCreds()
 async function GetGeminiResponse() {
     
   
-const prompt =  "Give me a list of " + numberOfSongs + "songs that are " + BPM + " beats per minute" + "considering " + otherInfo + ". Format the data in this style: remaster%20track:SONG_TITLE%20artist:ARTIST FIRST NAME OR BAND NAME%ARTIST LAST NAME (IGNORE IF YOU HAVE ALREADY PUT THE BAND NAME)    Instructions: add a comma between each track but no space. do not provide any other information about the tracks or explain why you picked them. If you make a mistake don't tell me about it"
+const prompt =  `Please provide ${numberOfSongs} real songs that match this request:
+- The user wants a playlist with a BPM of around ${BPM}.
+- The user described the vibe as: "${otherInfo}".
+
+Return ONLY a JSON array of songs in this exact format:
+[
+    {"title": "Song Title", "artist": "Artist Name"},
+    {"title": "Song Title", "artist": "Artist Name"}
+]
+
+Requirements:
+- All songs must be REAL songs that exist.
+- Never include fictional songs or artists.
+- Never return duplicate songs.
+- Match the user's mood and preferences.
+- Include variety across the preferred genres and decades.
+- No explanations, just the JSON array.`
+
 
     const response = await fetch("http://localhost:3000/api/get-ai-response", {
         method: 'POST',
@@ -119,7 +166,11 @@ const prompt =  "Give me a list of " + numberOfSongs + "songs that are " + BPM +
         body: JSON.stringify({ prompt: prompt })
     });
 
+    
+
     return await response.json();
+
+
 
 }
 
@@ -164,10 +215,13 @@ async function GetLamaResponse()
  async function ReturnTracks(songs) {
    
     for (const song of songs) {
-        if (!song) continue; // Skip empty strings from split
+        if (!song || !song.title || !song.artist) continue; // Skip empty strings from split
         
+
+        const query = `track:${song.title} artist:${song.artist}`;
+
         const params = new URLSearchParams();
-        params.append('q', song);
+        params.append('q', query);
         params.append('type', 'track');
         params.append('limit', '1'); // Get the top result
 
