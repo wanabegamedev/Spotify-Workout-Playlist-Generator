@@ -19,7 +19,7 @@ var playlistName = "AI Playlist"
 
 var playlistLink = "";
 
-
+console.log("Hello World")
 
 
 generateButton.addEventListener("click", GeneratePlaylist);
